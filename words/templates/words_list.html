@@ -8,18 +8,25 @@
 </br>
 </br>
 </br>
-  {% if words %}
-  <ul>
-    {% for word in words %}
-      <li>
-      <!--  <a href=" word.get_absolute_url ">{{ word.word }}</a> ({{word.word}})-->
-        {{word.word.word}} {{word.transcription}} {{word.translation.word}} {{word.word.language.code}} {{word.translation.language.code}} {{word.word.category}}  {{word.dictionary}}
-      </li>
+{% if words %}
+<ul>
+    {% for word in words.all %}
+    <li>
+        <!--  <a href=" word.get_absolute_url ">{{ word.word }}</a> ({{word.word}})-->
+        {{word.word.word}} {{word.get_transcription}} {{word.translation.word}}
+        {{word.word.language.code}} {{word.translation.language.code}}
+        {% for category in word.word.category.all %}
+        {{category}}
+        {% endfor %}
+        {% for dict in word.dictionary.all %}
+        {{dict}}
+        {% endfor %}
+    </li>
     {% endfor %}
-  </ul>
-  {% else %}
-    <p>There are no words.</p>
-  {% endif %}
+</ul>
+{% else %}
+<p>There are no words.</p>
+{% endif %}
 
 </br>
 </br>

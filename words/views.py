@@ -1,6 +1,14 @@
 from django.shortcuts import render
+from django.views import generic
 
 from .models import Category, Dictionary, DictionaryEntry, Language, Word
+
+class DictionaryEntriesView(generic.ListView):
+    model = DictionaryEntry
+    paginate_by = 1
+    context_object_name = 'words'
+#    queryset = Book.objects.filter(title__icontains='war')[:5]
+    template_name = 'all_entries.html'
 
 def index(request):
     """View function for home page of site."""
@@ -25,7 +33,6 @@ def index(request):
 
     # Render the HTML template index.html with the data in the context variable
     return render(request, 'index.html', context=context)
-
 
 def categories_dicts(request):
 
