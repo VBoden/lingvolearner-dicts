@@ -1,0 +1,30 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+
+{% block before_list %}{% endblock %}
+
+</br>
+</br>
+</br>
+</br>
+  {% if words %}
+  <ul>
+    {% for word in words %}
+      <li>
+      <!--  <a href=" word.get_absolute_url ">{{ word.word }}</a> ({{word.word}})-->
+        {{word.word.word}} {{word.transcription}} {{word.translation.word}} {{word.word.language.code}} {{word.translation.language.code}} {{word.word.category}}  {{word.dictionary}}
+      </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+    <p>There are no words.</p>
+  {% endif %}
+
+</br>
+</br>
+</br>
+</br>
+{% block after_list %}{% endblock %}
+
+{% endblock %}

@@ -16,6 +16,9 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
+    def get_absolute_url(self):
+        return reverse('category', args=[str(self.id)])
+
 
 class Dictionary(models.Model):
     name = models.CharField(max_length=30)
@@ -27,6 +30,9 @@ class Dictionary(models.Model):
 
     def __str__(self):
         return f'{self.name} ({self.language_from}-{self.language_to})'
+
+    def get_absolute_url(self):
+        return reverse('dictionary', args=[str(self.id)])
 
 
 class Word(models.Model):

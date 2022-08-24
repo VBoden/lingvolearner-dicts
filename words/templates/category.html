@@ -1,0 +1,52 @@
+{% extends "words_list.html" %}
+
+{% block title %}
+<title>Category {{category.name}}</title>
+{% endblock %}
+
+{% block before_list %}
+<h1>Words in category <b>{{category.name}}</b></h1>
+{% endblock %}
+
+
+
+
+{% block after_list %}
+<div class="row">
+    <div class="col-sm-5">
+
+        <h2>Categories</h2>
+        {% if categories %}
+        <ul>
+            {% for category in categories %}
+            <li>
+                <a href=" {{category.get_absolute_url}} ">{{category.name}}</a>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p>There are no categories.</p>
+        {% endif %}
+    </div>
+    <div class="col-sm-5 ">
+
+        <h2>Dictionaries</h2>
+        {% if dictionaries %}
+        <ul>
+            {% for dict in dictionaries %}
+            <li>
+                <a href=" {{dict.get_absolute_url}} ">{{dict.name}}</a>
+                ({{dict.language_from.name}}-{{dict.language_to.name}})
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p>There are no dictionaries.</p>
+        {% endif %}
+
+    </div>
+</div>
+
+
+
+{% endblock %}
