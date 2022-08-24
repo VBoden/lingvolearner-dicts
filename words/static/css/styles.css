@@ -3,3 +3,22 @@
     padding: 0;
     list-style: none;
 }
+.title-word {
+width:15em;
+text-align: center;
+}
+.title-language {
+width:5em;
+text-align: center;
+}
+.dictionary-view {
+
+}
+table, th, td {
+  border: 1px solid black;
+  border-collapse: collapse;
+  border-color: #96D4D4;
+}
+.row2{
+background: #f9f9f9;
+}

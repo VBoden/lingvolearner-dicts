@@ -9,21 +9,54 @@
 </br>
 </br>
 {% if words %}
-<ul>
+
+<table class="dictionary-view">
+    <thead>
+    <tr>
+        <th></th>
+        <th class="title-word">word</th>
+        <th>transcription</th>
+        <th class="title-word">translation</th>
+        <th class="title-language">from</th>
+        <th class="title-language">to</th>
+        <th>categories</th>
+        <th>Dictionaries</th>
+    </tr>
+    </thead>
+    <tbody>
+
     {% for word in words.all %}
-    <li>
-        <!--  <a href=" word.get_absolute_url ">{{ word.word }}</a> ({{word.word}})-->
-        {{word.word.word}} {{word.get_transcription}} {{word.translation.word}}
-        {{word.word.language.code}} {{word.translation.language.code}}
-        {% for category in word.word.category.all %}
-        {{category}}
-        {% endfor %}
-        {% for dict in word.dictionary.all %}
-        {{dict}}
-        {% endfor %}
-    </li>
+    <tr class="{% cycle 'row1' 'row2' %}">
+        <td>
+            <input type="checkbox" value="word.id">
+        </td>
+        <td>
+            <!--  <a href=" word.get_absolute_url ">{{ word.word }}</a> ({{word.word}})-->
+            {{word.word.word}}
+        </td>
+        <td>
+            {{word.get_transcription}}
+        </td>
+        <td>{{word.translation.word}}</td>
+        <td class="title-language">
+            {{word.word.language}}
+        </td>
+        <td class="title-language">{{word.translation.language}}</td>
+        <td>
+            {% for category in word.word.category.all %}
+            {{category}}
+            {% endfor %}
+        </td>
+        <td>
+            {% for dict in word.dictionary.all %}
+            {{dict}}
+            {% endfor %}
+        </td>
+    </tr>
     {% endfor %}
-</ul>
+
+    </tbody>
+</table>
 {% else %}
 <p>There are no words.</p>
 {% endif %}
