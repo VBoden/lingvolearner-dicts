@@ -10,6 +10,15 @@ class DictionaryEntriesView(generic.ListView):
     context_object_name = 'words'
 #    queryset = Book.objects.filter(title__icontains='war')[:5]
     template_name = 'all_entries.html'
+    
+    def setup(self, request, *args, **kwargs):
+        self.form = manage_entries_request(request)
+        return super().setup(request, *args, **kwargs)
+        
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form'] = self.form
+        return context
 
 def index(request):
     """View function for home page of site."""
@@ -44,16 +53,20 @@ def categories_dicts(request):
 
     return render(request, 'categories_and_dicts.html', context=context)
 
-def category(request, pk):
+def all_entries(request):
+    form = manage_entries_request(request)
+    entries = DictionaryEntry.objects.all()
     
-    if request.method == 'POST':
-        print('\n\n\n\n\n==post===')
-        print(request)
-        form = edit_entries(request)        
-    else:        
-        print('\n\n\n\n\n===get==')
-        print(request)
-        form = UpdateEntriesForm()
+    context = {
+        'words': entries,
+        'categories': Category.objects.all(),
+        'dictionaries': Dictionary.objects.all(),
+        'form':form
+    }
+    return render(request, 'all_entries.html', context=context)
+
+def category(request, pk):
+    form = manage_entries_request(request)
     category = Category.objects.get(pk=pk)
     entries = DictionaryEntry.objects.filter(word__category__id__contains=category.id)
     
@@ -65,6 +78,18 @@ def category(request, pk):
         'form':form
     }
     return render(request, 'category.html', context=context)
+
+def manage_entries_request(request):
+    
+    if request.method == 'POST':
+        print('\n\n\n\n\n==post===')
+        print(request)
+        form = edit_entries(request)        
+    else:        
+        print('\n\n\n\n\n===get==')
+        print(request)
+        form = UpdateEntriesForm()
+    return form
 
 def dictionary(request, pk):
     dictionary = Dictionary.objects.get(pk=pk)
@@ -82,6 +107,7 @@ def add_entry(request):
     return edit_entry(request,None)
 
 def edit_entry(request, pk):
+    result = ''
     if request.method == 'POST':
         form = UpdateEntryForm(request.POST)
         if form.is_valid():
@@ -96,15 +122,15 @@ def edit_entry(request, pk):
             entry.dictionary.set(fc['dictionaries'])
             result = "Seccessfuly added: "+ str(entry)
         if('_save' in request.POST):
-            context = {
-                'words':DictionaryEntry.objects.all()
-            }
-            return render(request, 'all_entries.html', context=context)
+#            context = {
+#                'words':DictionaryEntry.objects.all()
+#            }
+#            return render(request, 'all_entries.html', context=context)
+            return all_entries(request)
     else:
         from_lang = Language.objects.get(code='es')
         to_lang = Language.objects.get(code='uk')
         form = UpdateEntryForm(initial={'from_lang': from_lang.code,'to':to_lang})
-        result = ''
     
     context = {
         'form':form,
