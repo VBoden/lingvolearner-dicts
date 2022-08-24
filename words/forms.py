@@ -10,3 +10,7 @@ class UpdateEntryForm(forms.Form):
     to = forms.ModelChoiceField(queryset=Language.objects.all())
     categories = forms.ModelMultipleChoiceField(queryset=Category.objects.all(),required=False)
     dictionaries = forms.ModelMultipleChoiceField(queryset=Dictionary.objects.all(),required=False)
+
+class UpdateEntriesForm(forms.Form):
+    category = forms.ModelChoiceField(queryset=Category.objects.all(),required=False)
+    dictionary = forms.ModelChoiceField(queryset=Dictionary.objects.all(),required=False)

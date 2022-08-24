@@ -22,3 +22,7 @@ table, th, td {
 .row2{
 background: #f9f9f9;
 }
+div.remove_button{
+margin-left: 50%;
+margin-bottom: 10px;
+}

@@ -9,54 +9,85 @@
 </br>
 </br>
 {% if words %}
+<form action="" method="post">
+    {% csrf_token %}
+    <div>
+        <div class="row">
+            <div class="col-sm-2">
+                Category:
+                {{ form.category }}
+            </div>
+            <div class="col-sm-2">
+                <input type="submit" value="Add" name="_add_category">
+                <input type="submit" value="Remove" name="_remove_category">
+            </div>
+        </div>
+        <p></p>
+        <div class="row">
+            <div class="col-sm-3">
+                Dictionary:
+                {{ form.dictionary }}
+            </div>
+            <div class="col-sm-3">
+                <input type="submit" value="Add" name="_add_dictionary">
+                <input type="submit" value="Remove" name="_remove_dictionary">
+            </div>
+        </div>
+        <div class="remove_button">
+            <input type="submit" value="Delete entries" name="_delete_entries">
+            <input type="submit" value="Delete entries and words" name="_delete_entries_with_words">
+        </div>
+    </div>
+    <div>
+        <table class="dictionary-view">
+            <thead>
+            <tr>
+                <th></th>
+                <th class="title-word">word</th>
+                <th>transcription</th>
+                <th class="title-word">translation</th>
+                <th class="title-language">from</th>
+                <th class="title-language">to</th>
+                <th>categories</th>
+                <th>Dictionaries</th>
+            </tr>
+            </thead>
+            <tbody>
 
-<table class="dictionary-view">
-    <thead>
-    <tr>
-        <th></th>
-        <th class="title-word">word</th>
-        <th>transcription</th>
-        <th class="title-word">translation</th>
-        <th class="title-language">from</th>
-        <th class="title-language">to</th>
-        <th>categories</th>
-        <th>Dictionaries</th>
-    </tr>
-    </thead>
-    <tbody>
-
-    {% for word in words.all %}
-    <tr class="{% cycle 'row1' 'row2' %}">
-        <td>
-            <input type="checkbox" value="word.id">
-        </td>
-        <td>
-            <!--  <a href=" word.get_absolute_url ">{{ word.word }}</a> ({{word.word}})-->
-            {{word.word.word}}
-        </td>
-        <td>
-            {{word.get_transcription}}
-        </td>
-        <td>{{word.translation.word}}</td>
-        <td class="title-language">
-            {{word.word.language}}
-        </td>
-        <td class="title-language">{{word.translation.language}}</td>
-        <td>
-            {% for category in word.word.category.all %}
-            {{category}}
+            {% for word in words.all %}
+            <tr class="{% cycle 'row1' 'row2' %}">
+                <td>
+                    <input id="id_entries" type="checkbox" value="{{word.id}}" name="entries">
+                </td>
+                <td>
+                    <!--  <a href=" word.get_absolute_url ">{{ word.word }}</a> ({{word.word}})-->
+                    {{word.word.word}}
+                </td>
+                <td>
+                    {{word.get_transcription}}
+                </td>
+                <td>{{word.translation.word}}</td>
+                <td class="title-language">
+                    {{word.word.language}}
+                </td>
+                <td class="title-language">{{word.translation.language}}</td>
+                <td>
+                    {% for category in word.word.category.all %}
+                    {{category}}
+                    {% endfor %}
+                </td>
+                <td>
+                    {% for dict in word.dictionary.all %}
+                    {{dict}}
+                    {% endfor %}
+                </td>
+            </tr>
             {% endfor %}
-        </td>
-        <td>
-            {% for dict in word.dictionary.all %}
-            {{dict}}
-            {% endfor %}
-        </td>
-    </tr>
-    {% endfor %}
 
-    </tbody>
-</table>
+            </tbody>
+        </table>
+    </div>
+</form>
 {% else %}
 <p>There are no words.</p>
 {% endif %}

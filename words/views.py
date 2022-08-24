@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.views import generic
 
 from .models import Category, Dictionary, DictionaryEntry, Language, Word
-from .forms import UpdateEntryForm
+from .forms import UpdateEntryForm, UpdateEntriesForm
 
 class DictionaryEntriesView(generic.ListView):
     model = DictionaryEntry
@@ -45,6 +45,15 @@ def categories_dicts(request):
     return render(request, 'categories_and_dicts.html', context=context)
 
 def category(request, pk):
+    
+    if request.method == 'POST':
+        print('\n\n\n\n\n==post===')
+        print(request)
+        form = edit_entries(request)        
+    else:        
+        print('\n\n\n\n\n===get==')
+        print(request)
+        form = UpdateEntriesForm()
     category = Category.objects.get(pk=pk)
     entries = DictionaryEntry.objects.filter(word__category__id__contains=category.id)
     
@@ -53,6 +62,7 @@ def category(request, pk):
         'words': entries,
         'categories': Category.objects.all(),
         'dictionaries': Dictionary.objects.all(),
+        'form':form
     }
     return render(request, 'category.html', context=context)
 
@@ -109,6 +119,37 @@ def create_word(word_text,lang,categories):
     word.save()
     return word
     
-    
-    
-    
+def edit_entries(request):
+    form = UpdateEntriesForm(request.POST)
+    entries = []
+    for e in request.POST.getlist('entries'):
+        entries.append(DictionaryEntry.objects.get(pk=e))
+    if form.is_valid():
+        fc = form.cleaned_data
+        if('_add_dictionary' in request.POST and fc['dictionary'] != None):
+            for entry in entries:
+                entry.dictionary.add(fc['dictionary'])
+                entry.save()
+        elif('_remove_dictionary' in request.POST and fc['dictionary'] != None):
+            for entry in entries:
+                entry.dictionary.remove(fc['dictionary'])
+                entry.save()
+        elif('_add_category' in request.POST and fc['category'] != None):
+            for entry in entries:
+                entry.word.category.add(fc['category'])
+                entry.translation.category.add(fc['category'])
+                entry.save()
+        elif('_remove_category' in request.POST and fc['category'] != None):
+            for entry in entries:
+                entry.word.category.remove(fc['category'])
+                entry.translation.category.remove(fc['category'])
+                entry.save()
+        elif('_delete_entries_with_words' in request.POST):
+            for entry in entries:
+                entry.word.delete()
+                entry.translation.delete()
+                entry.delete()
+        elif('_delete_entries' in request.POST):
+            for entry in entries:
+                entry.delete()
+    return form
