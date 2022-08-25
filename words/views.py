@@ -55,18 +55,30 @@ def categories_dicts(request):
     return render(request, 'categories_and_dicts.html', context=context)
 
 def all_entries(request):
+    page = 1
+    per_page = 2
+    if(request.GET):
+        page = request.GET.get("page", 1)
+        per_page = request.GET.get("per_page", 2)
+
     form = manage_entries_request(request)
     entries = DictionaryEntry.objects.all()
+    paginator = Paginator(entries, per_page)
+    page_object = paginator.get_page(page)
     
     context = {
-        'words': entries,
+        'words':page_object.object_list,
         'categories': Category.objects.all(),
         'dictionaries': Dictionary.objects.all(),
-        'form':form
+        'form':form,
+        'is_paginated': True,
+        "page_obj": page_object
     }
     return render(request, 'all_entries.html', context=context)
 
 def category(request, pk):
+    page = 1
+    per_page = 2
     if(request.GET):
         page = request.GET.get("page", 1)
         per_page = request.GET.get("per_page", 2)
@@ -76,32 +88,14 @@ def category(request, pk):
     entries = DictionaryEntry.objects.filter(word__category__id__contains=category.id)
     paginator = Paginator(entries, per_page)
     page_object = paginator.get_page(page)
-    print('\n\n\n\n====')
-    print(entries.count())
-    print('\n\n\n\n====')
-#    total_count = entries.count()//paginate_by+1
-    
-#    page = {
-#            'has_previous': page>0,
-#            'previous_page_number': page-1,
-#            'number':page,
-#            'paginator':{
-#                    'num_pages': total_count
-#                    },
-#            'has_next':page<total_count,
-#            'next_page_number':page+1
-#            }
-    
     
     context = {
         'category': category,
-#        'words': entries,
         'words':page_object.object_list,
         'categories': Category.objects.all(),
         'dictionaries': Dictionary.objects.all(),
         'form':form,
         'is_paginated': True,
-#        'page_obj': page
         "page_obj": page_object
     }
     return render(request, 'category.html', context=context)
