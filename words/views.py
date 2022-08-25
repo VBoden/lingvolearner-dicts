@@ -56,10 +56,11 @@ def categories_dicts(request):
 
 def all_entries(request):
     page = 1
-    per_page = 2
+    per_page = request.session.get('per_page',2)
     if(request.GET):
         page = request.GET.get("page", 1)
-        per_page = request.GET.get("per_page", 2)
+        per_page = request.GET.get("per_page", per_page)
+        request.session['per_page'] = per_page
 
     form = manage_entries_request(request)
     entries = DictionaryEntry.objects.all()
@@ -78,10 +79,11 @@ def all_entries(request):
 
 def category(request, pk):
     page = 1
-    per_page = 2
+    per_page = request.session.get('per_page',2)
     if(request.GET):
         page = request.GET.get("page", 1)
-        per_page = request.GET.get("per_page", 2)
+        per_page = request.GET.get("per_page", per_page)
+        request.session['per_page'] = per_page
     
     form = manage_entries_request(request)
     category = Category.objects.get(pk=pk)
@@ -113,6 +115,7 @@ def manage_entries_request(request):
     return form
 
 def dictionary(request, pk):
+    form = manage_entries_request(request)
     dictionary = Dictionary.objects.get(pk=pk)
     entries = DictionaryEntry.objects.filter(dictionary__id__contains=dictionary.id)
     
@@ -121,6 +124,7 @@ def dictionary(request, pk):
         'words': entries,
         'categories': Category.objects.all(),
         'dictionaries': Dictionary.objects.all(),
+        'form':form,
     }
     return render(request, 'dictionary.html', context=context)
 
