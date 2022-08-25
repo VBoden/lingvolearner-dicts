@@ -1,12 +1,13 @@
 from django.shortcuts import render
 from django.views import generic
+from django.core.paginator import Paginator
 
 from .models import Category, Dictionary, DictionaryEntry, Language, Word
 from .forms import UpdateEntryForm, UpdateEntriesForm
 
 class DictionaryEntriesView(generic.ListView):
     model = DictionaryEntry
-    paginate_by = 10
+    paginate_by = 2
     context_object_name = 'words'
 #    queryset = Book.objects.filter(title__icontains='war')[:5]
     template_name = 'all_entries.html'
@@ -66,16 +67,42 @@ def all_entries(request):
     return render(request, 'all_entries.html', context=context)
 
 def category(request, pk):
+    if(request.GET):
+        page = request.GET.get("page", 1)
+        per_page = request.GET.get("per_page", 2)
+    
     form = manage_entries_request(request)
     category = Category.objects.get(pk=pk)
     entries = DictionaryEntry.objects.filter(word__category__id__contains=category.id)
+    paginator = Paginator(entries, per_page)
+    page_object = paginator.get_page(page)
+    print('\n\n\n\n====')
+    print(entries.count())
+    print('\n\n\n\n====')
+#    total_count = entries.count()//paginate_by+1
+    
+#    page = {
+#            'has_previous': page>0,
+#            'previous_page_number': page-1,
+#            'number':page,
+#            'paginator':{
+#                    'num_pages': total_count
+#                    },
+#            'has_next':page<total_count,
+#            'next_page_number':page+1
+#            }
+    
     
     context = {
         'category': category,
-        'words': entries,
+#        'words': entries,
+        'words':page_object.object_list,
         'categories': Category.objects.all(),
         'dictionaries': Dictionary.objects.all(),
-        'form':form
+        'form':form,
+        'is_paginated': True,
+#        'page_obj': page
+        "page_obj": page_object
     }
     return render(request, 'category.html', context=context)
 
