@@ -1,6 +1,8 @@
-from django.shortcuts import render
+from django.shortcuts import render,redirect
 from django.views import generic
 from django.core.paginator import Paginator
+from django.core.exceptions import ObjectDoesNotExist
+import re
 
 from .models import Category, Dictionary, DictionaryEntry, Language, Word
 from .forms import UpdateEntryForm, UpdateEntriesForm
@@ -128,10 +130,10 @@ def dictionary(request, pk):
     }
     return render(request, 'dictionary.html', context=context)
 
-def add_entry(request):
-    return edit_entry(request,None)
+def add_entry(request, pk=None):
+#    return edit_entry(request,None)
 
-def edit_entry(request, pk):
+#def edit_entry(request, pk):
     result = ''
     if request.method == 'POST':
         form = UpdateEntryForm(request.POST)
@@ -139,36 +141,104 @@ def edit_entry(request, pk):
             fc = form.cleaned_data 
                 
             from_lang = Language.objects.get(code=fc['from_lang'].code)
-            word = create_word(fc['word'],from_lang,fc['categories'])
             to = Language.objects.get(code=fc['to'].code)
-            translation = create_word(fc['translation'],to,fc['categories'])
-            entry = DictionaryEntry(word = word, transcription=fc['transcription'],translation=translation)
-            entry.save()
-            entry.dictionary.set(fc['dictionaries'])
-            result = "Seccessfuly added: "+ str(entry)
+            categories = fc['categories']
+            if(fc['entry'] != None and not fc['entry_save_as_new']):
+                entry = fc['entry']
+                if(fc['word_save_as_new']):
+                    entry.word = create_word(fc['word'],from_lang,categories)
+                else:
+                    change_word(entry.word,fc['word'],from_lang,categories)                                
+                
+                if(fc['translation_save_as_new']):
+                    entry.translation = create_word(fc['translation'],to,categories)
+                else:
+                    change_word(entry.translation,fc['translation'],to,categories)
+                entry.transcription = fc['transcription']
+                entry.save()
+                entry.dictionary.set(fc['dictionaries'])
+                result = "Seccessfuly added: "+ str(entry)
+            else:
+                word = get_or_create_word(fc['word'],from_lang,categories)
+                translation = get_or_create_word(fc['translation'],to,categories)
+                entry = DictionaryEntry(word = word,translation=translation)
+                
+                entry.transcription = fc['transcription']
+                entry.save()
+                entry.dictionary.set(fc['dictionaries'])
+                result = "Seccessfuly added: "+ str(entry) 
         if('_save' in request.POST):
-#            context = {
-#                'words':DictionaryEntry.objects.all()
-#            }
-#            return render(request, 'all_entries.html', context=context)
-            return all_entries(request)
+            return all_entries(request)        
+        elif('_continue' in request.POST):
+            path=re.sub('/(\d)*$','/'+str(entry.pk),request.path_info)
+            context = {
+                'form':form,
+                'result':result
+            }
+            return redirect(path, template_name='edit_entry.html', context=context)            
+        elif('_addanother' in request.POST):
+            form = get_initial_update_form()
+            path=re.sub('/(\d)*$','/',request.path_info)
+            context = {
+                'form':form,
+                'result':result
+            }
+            return redirect(path, template_name='edit_entry.html', context=context)
     else:
-        from_lang = Language.objects.get(code='es')
-        to_lang = Language.objects.get(code='uk')
-        form = UpdateEntryForm(initial={'from_lang': from_lang.code,'to':to_lang})
+        entry = None
+        if(pk != None):
+            try:
+                entry = DictionaryEntry.objects.get(pk=pk)
+            except ObjectDoesNotExist:
+                pass
+        form = get_initial_update_form(entry)
     
     context = {
         'form':form,
         'result':result
     }
     return render(request, 'edit_entry.html', context=context)
-    
-def create_word(word_text,lang,categories):
-    word = Word(word=word_text,language=lang)
+
+def get_initial_update_form(entry=None):
+    from_lang = Language.objects.get(code='es')
+    to_lang = Language.objects.get(code='uk')
+    if(entry != None):
+        initial={'from_lang': entry.word.language.code,'to':entry.translation.language.code} 
+        initial['entry']=entry
+        initial['word']=entry.word.word
+        initial['transcription']=entry.transcription
+        initial['translation']=entry.translation.word
+        initial['categories']=entry.word.category.all().values_list("pk", flat=True)
+        initial['dictionaries']=entry.dictionary.all().values_list("pk", flat=True)     
+    else:
+        initial={'from_lang': from_lang.code,'to':to_lang}        
+    form = UpdateEntryForm(initial)
+    return form
+
+def get_or_create_word(word_text,lang,categories):
+    try:
+        return Word.objects.filter(word=word_text).first()
+    except ObjectDoesNotExist:
+       word = Word(word=word_text)
+    word.language = lang
     word.save()
     word.category.set(categories)
     word.save()
     return word
+
+def create_word(word_text,lang,categories):
+    word = Word(word=word_text)
+    word.language = lang
+    word.save()
+    word.category.set(categories)
+    word.save()
+    return word
+       
+def change_word(entry_word,word_text,lang,categories): 
+    entry_word.word = word_text
+    entry_word.language = lang
+    entry_word.category.set(categories)
+    entry_word.save()
     
 def edit_entries(request):
     form = UpdateEntriesForm(request.POST)
