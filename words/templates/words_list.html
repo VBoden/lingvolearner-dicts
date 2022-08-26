@@ -122,6 +122,37 @@
         </div>
     {% endif %}
   {% endblock %}
+{% block pagination2 %}
+{% if page_obj.has_previous %}
+        <a href="{{ request.path }}?page=1}}">
+            ◀️◀️
+        </a>
+        <a href="{{ request.path }}?page={{ page_obj.previous_page_number }}">
+            ◀️
+        </a>
+    {% endif%}
+    <a>{{page_obj.number}} of {{page_obj.paginator.num_pages}}</a>
+    {% if page_obj.has_next %}
+        <a href="{{ request.path }}?page={{ page_obj.next_page_number }}">
+            ▶️
+        </a>
+        <a href="{{ request.path }}?page={{ page_obj.paginator.num_pages }}">
+            ▶️▶️
+        </a>
+    {% endif%}
+    <hr>
+
+    {% for page_number in page_obj.paginator.get_elided_page_range %}
+        {% if page_number == page_obj.paginator.ELLIPSIS %}
+            {{page_number}}
+        {% else %}
+            <a href="{{ request.path }}?page={{ page_number }}"
+                class="{% if page_number == page_obj.number %}current{% endif %}">
+                {{page_number}}
+            </a>
+        {% endif %}
+    {% endfor %}
+{% endblock %}
 {% else %}
 <p>There are no words.</p>
 {% endif %}
