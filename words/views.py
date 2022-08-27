@@ -80,12 +80,8 @@ def filters(request):
 
 def create_filter_form(request):
     initial = {}
-    category_pk = request.session.get('category')
-    if(category_pk):
-        initial['category'] = Category.objects.get(pk=category_pk)
-    dictionary_pk = request.session.get('dictionary')
-    if(dictionary_pk):
-        initial['dictionary'] = Dictionary.objects.get(pk=dictionary_pk)
+    initial['category'] = get_category_from_session(request)
+    initial['dictionary'] = get_dictionary_from_session(request)
     simple_values = ['category_exclude', 'dictionary_exclude']
     for param in simple_values:
         value = request.session.get(param)
@@ -94,6 +90,20 @@ def create_filter_form(request):
     
     form = FiltersForm(initial=initial)
     return form
+
+
+def get_category_from_session(request):
+    category_pk = request.session.get('category')
+    if(category_pk):
+        return Category.objects.get(pk=category_pk)
+    return None
+
+
+def get_dictionary_from_session(request):
+    dictionary_pk = request.session.get('dictionary')
+    if(dictionary_pk):
+        return Dictionary.objects.get(pk=dictionary_pk)
+    return None
 
 
 def all_entries(request):
@@ -106,6 +116,18 @@ def all_entries(request):
 
     form = manage_entries_request(request)
     entries = DictionaryEntry.objects.all()
+    category = get_category_from_session(request)
+    dictionary = get_dictionary_from_session(request)
+    if(category):
+        if(request.session.get('category_exclude')):
+            entries = DictionaryEntry.objects.exclude(word__category__id__contains=category.id)
+        else:
+            entries = DictionaryEntry.objects.filter(word__category__id__contains=category.id)
+    elif(dictionary):
+        if(request.session.get('dictionary_exclude')):
+            entries = DictionaryEntry.objects.exclude(dictionary__id__contains=dictionary.id)
+        else:
+            entries = DictionaryEntry.objects.filter(dictionary__id__contains=dictionary.id)
     paginator = Paginator(entries, per_page)
     page_object = paginator.get_page(page)
     
