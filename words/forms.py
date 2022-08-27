@@ -27,6 +27,8 @@ class FiltersForm(forms.Form):
     category_exclude = forms.BooleanField(required=False, label='exclude')
     dictionary = forms.ModelChoiceField(queryset=Dictionary.objects.all(), required=False)
     dictionary_exclude = forms.BooleanField(required=False, label='exclude')
+    sortby = forms.ChoiceField(choices = (('word','word'),('pk','id')),label='sort by')
+    sortby_desc = forms.BooleanField(required=False, label='z-a')
 
 
 

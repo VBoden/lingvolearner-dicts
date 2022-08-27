@@ -77,6 +77,8 @@ def filters(request):
                 request.session['category_exclude'] = fc['category_exclude']
                 request.session['dictionary'] = None if not fc['dictionary'] else fc['dictionary'].pk
                 request.session['dictionary_exclude'] = fc['dictionary_exclude']
+                request.session['sortby'] = fc['sortby']
+                request.session['sortby_desc'] = fc['sortby_desc']
         elif('_reset_filters' in request.POST):
             reset_filters(request)
     return redirect(reverse('allwords'), template_name='all_entries.html')
@@ -86,7 +88,7 @@ def create_filter_form(request):
     initial = {}
     initial['category'] = get_category_from_session(request)
     initial['dictionary'] = get_dictionary_from_session(request)
-    simple_values = ['category_exclude', 'dictionary_exclude']
+    simple_values = ['category_exclude', 'dictionary_exclude', 'sortby', 'sortby_desc']
     for param in simple_values:
         value = request.session.get(param)
         if(value):
@@ -140,6 +142,9 @@ def handle_all_entries(request):
             entries = DictionaryEntry.objects.exclude(dictionary__id__contains=dictionary.id)
         else:
             entries = DictionaryEntry.objects.filter(dictionary__id__contains=dictionary.id)
+    
+    order_sign = '' if not request.session.get('sortby_desc', False) else '-'
+    entries = entries.order_by(order_sign + request.session.get('sortby', 'word'))
     paginator = Paginator(entries, per_page)
     page_object = paginator.get_page(page)
     
