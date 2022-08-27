@@ -9,6 +9,7 @@ class UpdateEntryForm(forms.Form):
     word_save_as_new = forms.BooleanField(required=False, label='Save word as new')
     transcription = forms.CharField(required=False)
     translation = forms.CharField()
+    notes = forms.CharField(required=False)
     translation_save_as_new = forms.BooleanField(required=False, label='Save translation as new')
     from_lang = forms.ModelChoiceField(queryset=Language.objects.all(), label='From')
     to = forms.ModelChoiceField(queryset=Language.objects.all())

@@ -217,16 +217,16 @@ def add_entry(request, pk=None):
                     change_word(entry.word, fc['word'], from_lang, categories)                                
                 
                 if(fc['translation_save_as_new']):
-                    entry.translation = create_word(fc['translation'], to, categories)
+                    entry.translation = create_word(fc['translation'], to, categories, fc['notes'])
                 else:
-                    change_word(entry.translation, fc['translation'], to, categories)
+                    change_word(entry.translation, fc['translation'], to, categories, fc['notes'])
                 entry.transcription = fc['transcription']
                 entry.save()
                 entry.dictionary.set(fc['dictionaries'])
                 result = "Seccessfuly added: " + str(entry)
             else:
                 word = get_or_create_word(fc['word'], from_lang, categories)
-                translation = get_or_create_word(fc['translation'], to, categories)
+                translation = get_or_create_word(fc['translation'], to, categories, fc['notes'])
                 entry = DictionaryEntry(word=word, translation=translation)
                 
                 entry.transcription = fc['transcription']
@@ -275,6 +275,7 @@ def get_initial_update_form(entry=None):
         initial['word'] = entry.word.word
         initial['transcription'] = entry.transcription
         initial['translation'] = entry.translation.word
+        initial['notes'] = entry.translation.notes
         initial['categories'] = entry.word.category.all().values_list("pk", flat=True)
         initial['dictionaries'] = entry.dictionary.all().values_list("pk", flat=True)     
     else:
@@ -283,31 +284,37 @@ def get_initial_update_form(entry=None):
     return form
 
 
-def get_or_create_word(word_text, lang, categories):
+def get_or_create_word(word_text, lang, categories, notes=None):
     try:
         return Word.objects.filter(word=word_text).first()
     except ObjectDoesNotExist:
        word = Word(word=word_text)
     word.language = lang
+    if(notes != None):
+        entry_word.notes = notes
     word.save()
     word.category.set(categories)
     word.save()
     return word
 
 
-def create_word(word_text, lang, categories):
+def create_word(word_text, lang, categories, notes=None):
     word = Word(word=word_text)
     word.language = lang
+    if(notes != None):
+        entry_word.notes = notes
     word.save()
     word.category.set(categories)
     word.save()
     return word
 
        
-def change_word(entry_word, word_text, lang, categories): 
+def change_word(entry_word, word_text, lang, categories, notes=None):
     entry_word.word = word_text
     entry_word.language = lang
     entry_word.category.set(categories)
+    if(notes != None):
+        entry_word.notes = notes
     entry_word.save()
 
     

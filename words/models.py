@@ -37,11 +37,15 @@ class Dictionary(models.Model):
 
 class Word(models.Model):
     word = models.CharField(max_length=30)
+    notes = models.CharField(max_length=50, blank=True, null=True)
     language = models.ForeignKey('Language', on_delete=models.CASCADE, null=False)
     category = models.ManyToManyField(Category, blank=True)
 
     class Meta:
         ordering = ['language', 'word']
+
+    def get_notes(self):
+        return "" if not self.notes else '('+self.notes+')'
 
     def __str__(self):
         return f'{self.word} ({str(self.language)})'
