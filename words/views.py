@@ -61,6 +61,12 @@ def categories_dicts(request):
     return render(request, 'categories_and_dicts.html', context=context)
 
 
+def reset_filters(request):
+    param_names = ['category', 'category_exclude', 'dictionary', 'dictionary_exclude']
+    for param in param_names:
+        request.session[param] = None
+
+
 def filters(request):
     if(request.POST):
         if('_apply_filters' in request.POST):
@@ -72,9 +78,7 @@ def filters(request):
                 request.session['dictionary'] = None if not fc['dictionary'] else fc['dictionary'].pk
                 request.session['dictionary_exclude'] = fc['dictionary_exclude']
         elif('_reset_filters' in request.POST):
-            param_names = ['category', 'category_exclude', 'dictionary', 'dictionary_exclude']
-            for param in param_names:
-                request.session[param] = None
+            reset_filters(request)
     return redirect(reverse('allwords'), template_name='all_entries.html')
 
 
@@ -107,6 +111,14 @@ def get_dictionary_from_session(request):
 
 
 def all_entries(request):
+    if(request.session.get('reset_filters', False)):
+        request.session['reset_filters'] = False
+        reset_filters(request)
+    context = handle_all_entries(request)
+    return render(request, 'all_entries.html', context=context)
+
+
+def handle_all_entries(request):
     page = 1
     per_page = request.session.get('per_page', 2)
     if(request.GET):
@@ -140,32 +152,15 @@ def all_entries(request):
         'is_paginated': True,
         "page_obj": page_object
     }
-    return render(request, 'all_entries.html', context=context)
+    return context
 
 
 def category(request, pk):
-    page = 1
-    per_page = request.session.get('per_page', 2)
-    if(request.GET):
-        page = request.GET.get("page", 1)
-        per_page = request.GET.get("per_page", per_page)
-        request.session['per_page'] = per_page
-    
-    form = manage_entries_request(request)
-    category = Category.objects.get(pk=pk)
-    entries = DictionaryEntry.objects.filter(word__category__id__contains=category.id)
-    paginator = Paginator(entries, per_page)
-    page_object = paginator.get_page(page)
-    
-    context = {
-        'category': category,
-        'words':page_object.object_list,
-        'categories': Category.objects.all(),
-        'dictionaries': Dictionary.objects.all(),
-        'form':form,
-        'is_paginated': True,
-        "page_obj": page_object
-    }
+    reset_filters(request)
+    request.session['category'] = None if not pk else pk
+    request.session['reset_filters'] = True
+    context = handle_all_entries(request)
+    context['category'] = Category.objects.get(pk=pk)
     return render(request, 'category.html', context=context)
 
 
@@ -183,24 +178,15 @@ def manage_entries_request(request):
 
 
 def dictionary(request, pk):
-    form = manage_entries_request(request)
-    dictionary = Dictionary.objects.get(pk=pk)
-    entries = DictionaryEntry.objects.filter(dictionary__id__contains=dictionary.id)
-    
-    context = {
-        'dictionary': dictionary,
-        'words': entries,
-        'categories': Category.objects.all(),
-        'dictionaries': Dictionary.objects.all(),
-        'form':form,
-    }
+    reset_filters(request)
+    request.session['reset_filters'] = True
+    request.session['dictionary'] = None if not pk else pk
+    context = handle_all_entries(request)
+    context['dictionary'] = Dictionary.objects.get(pk=pk)
     return render(request, 'dictionary.html', context=context)
 
 
 def add_entry(request, pk=None):
-#    return edit_entry(request,None)
-
-# def edit_entry(request, pk):
     result = ''
     if request.method == 'POST':
         form = UpdateEntryForm(request.POST)

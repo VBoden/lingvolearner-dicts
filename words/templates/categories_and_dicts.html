@@ -6,38 +6,7 @@
 
 {% block content %}
 <h1>Words dictionaries</h1>
-<p>Welcome to LocalLibrary, a website developed by <em>Mozilla Developer Network</em>!</p>
-
-
-<h2>Categories</h2>
-{% if categories %}
-<ul>
-    {% for category in categories %}
-    <li>
-        <!--  <a href=" word.get_absolute_url ">{{ word.word }}</a> ({{word.word}})-->
-        {{category.name}}
-    </li>
-    {% endfor %}
-</ul>
-{% else %}
-<p>There are no categories.</p>
-{% endif %}
-
-
-<h2>Dictionaries</h2>
-{% if dictionaries %}
-<ul>
-    {% for dict in dictionaries %}
-    <li>
-        <!--  <a href=" word.get_absolute_url ">{{ word.word }}</a> ({{word.word}})-->
-        {{dict.name}} ({{dict.language_from.name}}-{{dict.language_to.name}})
-    </li>
-    {% endfor %}
-</ul>
-{% else %}
-<p>There are no dictionaries.</p>
-{% endif %}
-
+<p>Dictionaries and categories</em>!</p>
 
 <div class="row">
     <div class="col-sm-5">

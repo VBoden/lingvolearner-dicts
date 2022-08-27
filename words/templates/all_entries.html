@@ -6,6 +6,31 @@
 
 {% block before_list %}
 <h1>Words in all dictionaries</b></h1>
+
+</br>
+</br>
+</br>
+</br>
+    Filters:
+    </br>
+<div class="filters">
+    <form action="{% url 'filters' %}" method="post">
+        {% csrf_token %}
+        {{filter_form.category.label}}
+        {{filter_form.category}}
+        {{filter_form.category_exclude}}
+        {{filter_form.category_exclude.label}}
+        <span class="space"></span>
+        {{filter_form.dictionary.label}}
+        {{filter_form.dictionary}}
+        {{filter_form.dictionary_exclude}}
+        {{filter_form.dictionary_exclude.label}}
+        <span class="space"></span>
+
+        <input type="submit" value="Apply filters" name="_apply_filters">
+        <input type="submit" value="Reset filters" name="_reset_filters">
+    </form>
+</div>
 {% endblock %}
 
 
