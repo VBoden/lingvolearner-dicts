@@ -26,3 +26,15 @@ div.remove_button{
 margin-left: 50%;
 margin-bottom: 10px;
 }
+div.filters{
+border: solid 1px #32a1ce;
+padding-left: 0.2em;
+padding-right: 0.2em;
+padding-bottom: 1em;
+padding-top: 0.5em;
+}
+span.space{
+padding:0.5em;
+padding-right:0em;
+border-left: 0.1em solid black;
+}

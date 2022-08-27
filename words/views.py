@@ -1,11 +1,13 @@
 from django.shortcuts import render,redirect
 from django.views import generic
+from django.urls import reverse
 from django.core.paginator import Paginator
 from django.core.exceptions import ObjectDoesNotExist
 import re
 
 from .models import Category, Dictionary, DictionaryEntry, Language, Word
-from .forms import UpdateEntryForm, UpdateEntriesForm
+from .forms import UpdateEntryForm, UpdateEntriesForm, FiltersForm
+
 
 class DictionaryEntriesView(generic.ListView):
     model = DictionaryEntry
@@ -56,6 +58,41 @@ def categories_dicts(request):
 
     return render(request, 'categories_and_dicts.html', context=context)
 
+
+def filters(request):
+    if(request.POST):
+        if('_apply_filters' in request.POST):
+            form = FiltersForm(request.POST)
+            if form.is_valid():
+                fc = form.cleaned_data
+                request.session['category'] = None if not fc['category'] else fc['category'].pk
+                request.session['category_exclude'] = fc['category_exclude']
+                request.session['dictionary'] = None if not fc['dictionary'] else fc['dictionary'].pk
+                request.session['dictionary_exclude'] = fc['dictionary_exclude']
+        elif('_reset_filters' in request.POST):
+            param_names = ['category','category_exclude','dictionary','dictionary_exclude']
+            for param in param_names:
+                request.session[param] = None
+    return redirect(reverse('allwords'), template_name='all_entries.html')
+
+def create_filter_form(request):
+    initial = {}
+    print(request.session.get('category'))
+    category_pk = request.session.get('category')
+    if(category_pk):
+        initial['category']=Category.objects.get(pk=category_pk)
+    dictionary_pk = request.session.get('dictionary')
+    if(dictionary_pk):
+        initial['dictionary']=Dictionary.objects.get(pk=dictionary_pk)
+    simple_values = ['category_exclude','dictionary_exclude']
+    for param in simple_values:
+        value = request.session.get(param)
+        if(value):
+            initial[param] = value
+    
+    form = FiltersForm(initial=initial)
+    return form
+
 def all_entries(request):
     page = 1
     per_page = request.session.get('per_page',2)
@@ -74,6 +111,7 @@ def all_entries(request):
         'categories': Category.objects.all(),
         'dictionaries': Dictionary.objects.all(),
         'form':form,
+        'filter_form':create_filter_form(request),
         'is_paginated': True,
         "page_obj": page_object
     }

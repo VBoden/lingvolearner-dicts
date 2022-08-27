@@ -12,4 +12,5 @@ urlpatterns = [
 #    path('entry/<uuid:pk>/edit/', views.edit_entry, name='edit-entry'),
     path('entry/add/', views.add_entry, name='add-entry'),
     re_path(r'^entry/add/(?P<pk>\d+)$', views.add_entry, name='add-entry'),
+    path('filters/', views.filters, name='filters'),
 ]
