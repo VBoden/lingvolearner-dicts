@@ -234,7 +234,7 @@ def add_entry(request, pk=None):
                 entry.dictionary.set(fc['dictionaries'])
                 result = "Seccessfuly added: " + str(entry) 
         if('_save' in request.POST):
-            return all_entries(request)        
+            return redirect(reverse('allwords'), template_name='all_entries.html')
         elif('_continue' in request.POST):
             path = re.sub('/(\d)*$', '/' + str(entry.pk), request.path_info)
             context = {

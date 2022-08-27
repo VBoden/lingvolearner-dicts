@@ -64,6 +64,7 @@
                 <th class="title-language">to</th>
                 <th>categories</th>
                 <th>Dictionaries</th>
+                <th></th>
             </tr>
             </thead>
             <tbody>
@@ -94,6 +95,9 @@
                     {% for dict in word.dictionary.all %}
                     {{dict}}
                     {% endfor %}
+                </td>
+                <td>
+                    <a href="{% url 'add-entry' word.pk %}">Edit</a>
                 </td>
             </tr>
             {% endfor %}
