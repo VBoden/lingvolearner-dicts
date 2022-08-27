@@ -45,7 +45,7 @@ class Word(models.Model):
         ordering = ['language', 'word']
 
     def get_notes(self):
-        return "" if not self.notes else '('+self.notes+')'
+        return "" if not self.notes else ' ('+self.notes+')'
 
     def __str__(self):
         return f'{self.word} ({str(self.language)})'

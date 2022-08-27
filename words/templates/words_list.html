@@ -8,6 +8,7 @@
 <h3>Total words: {{ page_obj.paginator.count }}</h3>
 <form action="" method="post">
     {% csrf_token %}
+    {% block editing_list %}
     <div>
         <div class="row">
             <div class="col-sm-2">
@@ -36,6 +37,7 @@
         </div>
     </div>
     <div>
+    {% endblock %}
 {% block pagination0 %}
     {% if is_paginated %}
         <div class="pagination">

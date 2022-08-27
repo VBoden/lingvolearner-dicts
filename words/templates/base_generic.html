@@ -19,6 +19,7 @@
                 <li><a href="{% url 'index' %}">Home</a></li>
                 <li><a href="{% url 'allwords' %}">All entries</a></li>
                 <li><a href="{% url 'add-entry' %}">Add new entry</a></li>
+                <li><a href="{% url 'export_to_file' %}">Export to file</a></li>
                 <li><a href="{% url 'categories_and_dicts' %}">Categories and dicts</a></li>
             </ul>
 
@@ -66,6 +67,7 @@
                 </form>
             </div>
             {% endblock %}
+            <p>{{result}}</p>
             {% block content %}{% endblock %}
         </div>
     </div>

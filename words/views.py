@@ -66,12 +66,14 @@ def reset_filters(request):
     for param in param_names:
         request.session[param] = None
 
+
 def change_per_page(request):
     if(request.POST):
         print('\n\n')
         print(request.POST.get('per_page'))
         request.session['per_page'] = request.POST.get('per_page')
     return redirect(reverse('allwords'), template_name='all_entries.html')
+
 
 def filters(request):
     if(request.POST):
@@ -87,7 +89,10 @@ def filters(request):
                 request.session['sortby_desc'] = fc['sortby_desc']
         elif('_reset_filters' in request.POST):
             reset_filters(request)
-    return redirect(reverse('allwords'), template_name='all_entries.html')
+    if(request.POST.get('source') == reverse('allwords')):
+        return redirect(reverse('allwords'), template_name='all_entries.html')
+    else:
+        return redirect(reverse('export_to_file'), template_name='export_to_file.html')
 
 
 def create_filter_form(request):
@@ -126,6 +131,25 @@ def all_entries(request):
     return render(request, 'all_entries.html', context=context)
 
 
+def get_entries(request):
+    entries = DictionaryEntry.objects.all()
+    category = get_category_from_session(request)
+    dictionary = get_dictionary_from_session(request)
+    if (category):
+        if (request.session.get('category_exclude')):
+            entries = DictionaryEntry.objects.exclude(word__category__id__contains=category.id)
+        else:
+            entries = DictionaryEntry.objects.filter(word__category__id__contains=category.id)
+    elif (dictionary):
+        if (request.session.get('dictionary_exclude')):
+            entries = DictionaryEntry.objects.exclude(dictionary__id__contains=dictionary.id)
+        else:
+            entries = DictionaryEntry.objects.filter(dictionary__id__contains=dictionary.id)
+    order_sign = '' if not request.session.get('sortby_desc', False) else '-'
+    entries = entries.order_by(order_sign + request.session.get('sortby', 'word'))
+    return entries
+
+
 def handle_all_entries(request):
     page = 1
     per_page = request.session.get('per_page', 2)
@@ -135,22 +159,7 @@ def handle_all_entries(request):
         request.session['per_page'] = per_page
 
     form = manage_entries_request(request)
-    entries = DictionaryEntry.objects.all()
-    category = get_category_from_session(request)
-    dictionary = get_dictionary_from_session(request)
-    if(category):
-        if(request.session.get('category_exclude')):
-            entries = DictionaryEntry.objects.exclude(word__category__id__contains=category.id)
-        else:
-            entries = DictionaryEntry.objects.filter(word__category__id__contains=category.id)
-    elif(dictionary):
-        if(request.session.get('dictionary_exclude')):
-            entries = DictionaryEntry.objects.exclude(dictionary__id__contains=dictionary.id)
-        else:
-            entries = DictionaryEntry.objects.filter(dictionary__id__contains=dictionary.id)
-    
-    order_sign = '' if not request.session.get('sortby_desc', False) else '-'
-    entries = entries.order_by(order_sign + request.session.get('sortby', 'word'))
+    entries = get_entries(request)
     paginator = Paginator(entries, per_page)
     page_object = paginator.get_page(page)
     
@@ -163,7 +172,7 @@ def handle_all_entries(request):
         'is_paginated': True,
         'page_obj': page_object,
         'per_page':per_page,
-        'per_page_values':['5','10','25','50','100','1000'],
+        'per_page_values':['5', '10', '25', '50', '100', '1000'],
     }
     return context
 
@@ -200,7 +209,7 @@ def dictionary(request, pk):
 
 
 def add_entry(request, pk=None):
-    result = ''
+    result = 'Changes saved'
     if request.method == 'POST':
         form = UpdateEntryForm(request.POST)
         if form.is_valid():

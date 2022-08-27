@@ -1,5 +1,5 @@
 from django.urls import path, re_path
-from . import views
+from . import views, io_dict
 
 urlpatterns = [
     path('', views.index, name='index'),
@@ -14,4 +14,5 @@ urlpatterns = [
     re_path(r'^entry/add/(?P<pk>\d+)$', views.add_entry, name='add-entry'),
     path('filters/', views.filters, name='filters'),
     path('per_page_url/', views.change_per_page, name='per_page_url'),
+    path('export_to_file/', io_dict.export_to_file, name='export_to_file'),
 ]

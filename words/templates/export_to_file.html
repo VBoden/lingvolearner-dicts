@@ -1,0 +1,28 @@
+{% extends "all_entries.html" %}
+
+{% block title %}
+<title>All word entries</title>
+{% endblock %}
+
+
+{% block editing_list %}
+Export:
+    </br>
+<div class="filters">
+    {{form.file_name.label}}
+    {{form.file_name}}
+    {{form.file_name_ending}}
+    {{form.only_selected}}
+    {{form.only_selected.label}}
+<input type="submit" value="Export" name="_export">
+</div>
+    </br>
+    </br>
+{% endblock %}
+
+
+{% block after_list %}
+
+
+
+{% endblock %}

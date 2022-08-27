@@ -16,6 +16,7 @@
 <div class="filters">
     <form action="{% url 'filters' %}" method="post">
         {% csrf_token %}
+        <input type="hidden" name="source" value="{{ request.path }}">
         {{filter_form.category.label}}
         {{filter_form.category}}
         {{filter_form.category_exclude}}

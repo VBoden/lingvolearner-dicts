@@ -32,5 +32,9 @@ class FiltersForm(forms.Form):
     sortby_desc = forms.BooleanField(required=False, label='z-a')
 
 
+class ExportToFileForm(forms.Form):
+    only_selected = forms.BooleanField(required=False, label='selected only')
+    file_name = forms.CharField()
+    file_name_ending = forms.CharField()
 
 
