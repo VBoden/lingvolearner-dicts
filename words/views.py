@@ -66,6 +66,12 @@ def reset_filters(request):
     for param in param_names:
         request.session[param] = None
 
+def change_per_page(request):
+    if(request.POST):
+        print('\n\n')
+        print(request.POST.get('per_page'))
+        request.session['per_page'] = request.POST.get('per_page')
+    return redirect(reverse('allwords'), template_name='all_entries.html')
 
 def filters(request):
     if(request.POST):
@@ -155,7 +161,9 @@ def handle_all_entries(request):
         'form':form,
         'filter_form':create_filter_form(request),
         'is_paginated': True,
-        "page_obj": page_object
+        'page_obj': page_object,
+        'per_page':per_page,
+        'per_page_values':['5','10','25','50','100','1000'],
     }
     return context
 

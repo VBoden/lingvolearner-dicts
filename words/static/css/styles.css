@@ -33,6 +33,9 @@ padding-right: 0.2em;
 padding-bottom: 1em;
 padding-top: 0.5em;
 }
+div.per-page{
+float: right;
+}
 span.space{
 padding:0.5em;
 padding-right:0em;

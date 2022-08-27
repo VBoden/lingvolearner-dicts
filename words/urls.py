@@ -13,4 +13,5 @@ urlpatterns = [
     path('entry/add/', views.add_entry, name='add-entry'),
     re_path(r'^entry/add/(?P<pk>\d+)$', views.add_entry, name='add-entry'),
     path('filters/', views.filters, name='filters'),
+    path('per_page_url/', views.change_per_page, name='per_page_url'),
 ]
