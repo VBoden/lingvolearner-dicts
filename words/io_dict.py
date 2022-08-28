@@ -79,6 +79,9 @@ def to_entry(line, from_lang, to_lang, categories, dicts):
 
 
 def convert_line(entries_pks, not_aded_entries, fc, dicts, categories, line):
+    line = line.replace('\n', '')
+    if(len(line)==0):
+        return
     entry, not_added = to_entry(line, fc['from_lang'], fc['to'], categories, dicts)
     if (entry != None):
         entries_pks.append(entry.pk)
@@ -95,6 +98,7 @@ def handle_import_from_dir_post(request):
         from_path = 'io/imports/to_be_imported'
         to_path = 'io/imports/imported'
         onlyfiles = [f for f in listdir(from_path) if isfile(join(from_path, f))]
+        imported_files = []
         for file in onlyfiles:
             dicts = []
             if(fc['use_filename_as_dict']):
@@ -115,9 +119,10 @@ def handle_import_from_dir_post(request):
                     if '%' in line:
                         lines = line.split('%')
                         for l in lines:
-                            convert_line(entries_pks, not_aded_entries, fc, dicts, categories, line)
+                            convert_line(entries_pks, not_aded_entries, fc, dicts, categories, l)
                     else:
                         convert_line(entries_pks, not_aded_entries, fc, dicts, categories, line)
+            imported_files.append(file)
             rename(join(from_path, file),join(to_path, file))
             if(fc['only_first']):
                 break
@@ -136,9 +141,9 @@ def handle_import_from_dir_post(request):
             not_ad = ''
             for e in not_aded_entries:
                 not_ad = not_ad + f'{e.word.word}|[{e.get_transcription()}]|{e.translation.word}{e.translation.get_notes()}\n'
-            context['result'] = 'not added:\n' + not_ad
+            context['result'] = 'Importing from '+ str(imported_files)+'. Not added:\n' + not_ad
         else:            
-            context['result'] = 'Successfuly imported ' + str(not_aded_entries)
+            context['result'] = 'Successfuly imported from ' + str(imported_files)
         return initial, context
 
 
