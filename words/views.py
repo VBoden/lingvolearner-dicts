@@ -137,14 +137,14 @@ def get_entries(request):
     dictionary = get_dictionary_from_session(request)
     if (category):
         if (request.session.get('category_exclude')):
-            entries = DictionaryEntry.objects.exclude(word__category__id__contains=category.id)
+            entries = DictionaryEntry.objects.exclude(word__category__id=category.id)
         else:
-            entries = DictionaryEntry.objects.filter(word__category__id__contains=category.id)
+            entries = DictionaryEntry.objects.filter(word__category__id=category.id)
     elif (dictionary):
         if (request.session.get('dictionary_exclude')):
-            entries = DictionaryEntry.objects.exclude(dictionary__id__contains=dictionary.id)
+            entries = DictionaryEntry.objects.exclude(dictionary__id=dictionary.id)
         else:
-            entries = DictionaryEntry.objects.filter(dictionary__id__contains=dictionary.id)
+            entries = DictionaryEntry.objects.filter(dictionary__id=dictionary.id)
     order_sign = '' if not request.session.get('sortby_desc', False) else '-'
     entries = entries.order_by(order_sign + request.session.get('sortby', 'word'))
     return entries
@@ -319,7 +319,7 @@ def create_word(word_text, lang, categories, notes=None):
     word = Word(word=word_text)
     word.language = lang
     if(notes != None):
-        entry_word.notes = notes
+        word.notes = notes
     word.save()
     word.category.set(categories)
     word.save()

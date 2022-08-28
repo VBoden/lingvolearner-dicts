@@ -62,10 +62,10 @@
                 <th class="title-word">word</th>
                 <th>transcription</th>
                 <th class="title-word">translation</th>
-                <th class="title-language">from</th>
-                <th class="title-language">to</th>
                 <th>categories</th>
                 <th>Dictionaries</th>
+                <th class="title-language">from</th>
+                <th class="title-language">to</th>
                 <th></th>
             </tr>
             </thead>
@@ -84,10 +84,6 @@
                     {{word.get_transcription}}
                 </td>
                 <td>{{word.translation.word}} {{word.translation.get_notes}}</td>
-                <td class="title-language">
-                    {{word.word.language}}
-                </td>
-                <td class="title-language">{{word.translation.language}}</td>
                 <td>
                     {% for category in word.word.category.all %}
                     {{category}}
@@ -98,6 +94,10 @@
                     {{dict}}
                     {% endfor %}
                 </td>
+                <td class="title-language">
+                    {{word.word.language}}
+                </td>
+                <td class="title-language">{{word.translation.language}}</td>
                 <td>
                     <a href="{% url 'add-entry' word.pk %}">Edit</a>
                 </td>

@@ -161,7 +161,7 @@ def import_from_dir(request):
                    'use_filename_as_dict':True,
                    }
         entries_pks = request.session.get('last_imported', [])
-        entries = DictionaryEntry.objects.filter(pk__in=entries_pks)
+        entries = DictionaryEntry.objects.filter(pk__in=entries_pks).order_by('pk')
         context = views.handle_all_entries(request, entries)
     form = ImportFromFileForm(initial)
     context['form'] = form
