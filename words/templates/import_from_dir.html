@@ -1,0 +1,21 @@
+{% extends "words_list.html" %}
+{% block title %}
+<title>Import from directory</title>
+{% endblock %}
+
+{% block per_pager %}
+{% endblock %}
+
+{% block before_list %}
+<h1>Importing from files in directory</h1>
+<div>
+    <form action="" method="post">
+        {% csrf_token %}
+        <table>
+            {{ form.as_table }}
+        </table>
+        <input type="submit" value="Import" name="_import">
+    </form>
+</div>
+{% endblock %}
+

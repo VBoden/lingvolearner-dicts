@@ -150,7 +150,7 @@ def get_entries(request):
     return entries
 
 
-def handle_all_entries(request):
+def handle_all_entries(request, entries=None):
     page = 1
     per_page = request.session.get('per_page', 2)
     if(request.GET):
@@ -159,7 +159,8 @@ def handle_all_entries(request):
         request.session['per_page'] = per_page
 
     form = manage_entries_request(request)
-    entries = get_entries(request)
+    if(entries == None):
+        entries = get_entries(request)
     paginator = Paginator(entries, per_page)
     page_object = paginator.get_page(page)
     
@@ -232,6 +233,7 @@ def add_entry(request, pk=None):
                 entry.transcription = fc['transcription']
                 entry.save()
                 entry.dictionary.set(fc['dictionaries'])
+                entry.save()
                 result = "Seccessfuly added: " + str(entry)
             else:
                 word = get_or_create_word(fc['word'], from_lang, categories)
@@ -241,6 +243,7 @@ def add_entry(request, pk=None):
                 entry.transcription = fc['transcription']
                 entry.save()
                 entry.dictionary.set(fc['dictionaries'])
+                entry.save()
                 result = "Seccessfuly added: " + str(entry) 
         if('_save' in request.POST):
             return redirect(reverse('allwords'), template_name='all_entries.html')
@@ -276,8 +279,6 @@ def add_entry(request, pk=None):
 
 
 def get_initial_update_form(entry=None):
-    from_lang = Language.objects.get(code='es')
-    to_lang = Language.objects.get(code='uk')
     if(entry != None):
         initial = {'from_lang': entry.word.language.code, 'to':entry.translation.language.code} 
         initial['entry'] = entry
@@ -288,22 +289,29 @@ def get_initial_update_form(entry=None):
         initial['categories'] = entry.word.category.all().values_list("pk", flat=True)
         initial['dictionaries'] = entry.dictionary.all().values_list("pk", flat=True)     
     else:
+        from_lang = Language.objects.get(code='es')
+        to_lang = Language.objects.get(code='uk')
         initial = {'from_lang': from_lang.code, 'to':to_lang}        
     form = UpdateEntryForm(initial)
     return form
 
 
 def get_or_create_word(word_text, lang, categories, notes=None):
-    try:
-        return Word.objects.filter(word=word_text).first()
-    except ObjectDoesNotExist:
+    existing = Word.objects.filter(word=word_text).first()
+    if(existing != None):
+        return existing
+    else:
        word = Word(word=word_text)
     word.language = lang
     if(notes != None):
         entry_word.notes = notes
     word.save()
+    print('saved word:')
+    print(word)
     word.category.set(categories)
     word.save()
+    print('saved2 word:')
+    print(word)
     return word
 
 
@@ -353,11 +361,21 @@ def edit_entries(request):
                 entry.translation.category.remove(fc['category'])
                 entry.save()
         elif('_delete_entries_with_words' in request.POST):
+            entries_pks = request.session.get('last_imported', [])
             for entry in entries:
+                if(entry.pk in entries_pks):
+                    entries_pks.remove(entry.pk)
                 entry.word.delete()
                 entry.translation.delete()
                 entry.delete()
+            request.session['last_imported'] = entries_pks
         elif('_delete_entries' in request.POST):
+            entries_pks = request.session.get('last_imported', [])
             for entry in entries:
+                if(entry.pk in entries_pks):
+                    entries_pks.remove(entry.pk)
+                    print('after remove')
+                    print(entries_pks)
                 entry.delete()
+            request.session['last_imported'] = entries_pks
     return form

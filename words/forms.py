@@ -37,4 +37,11 @@ class ExportToFileForm(forms.Form):
     file_name = forms.CharField()
     file_name_ending = forms.CharField()
 
+class ImportFromFileForm(forms.Form):
+    from_lang = forms.ModelChoiceField(queryset=Language.objects.all(), label='From language')
+    to = forms.ModelChoiceField(queryset=Language.objects.all(), label='To language')
+    category = forms.ModelChoiceField(queryset=Category.objects.all(), required=False, label='Assign to category')
+    dictionary = forms.ModelChoiceField(queryset=Dictionary.objects.all(), required=False, label='Assign to dictionary')
+    use_filename_as_dict = forms.BooleanField(required=False, label='Use filename as dict')
+    only_first = forms.BooleanField(required=False, label='Import only first')
 

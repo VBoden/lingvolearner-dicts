@@ -1,8 +1,11 @@
 from datetime import datetime
 from django.shortcuts import render, redirect
+from django.core.exceptions import ObjectDoesNotExist
 from . import views
-from .models import Category, Dictionary, DictionaryEntry
-from .forms import ExportToFileForm
+from .models import Category, Dictionary, DictionaryEntry, Language
+from .forms import ExportToFileForm, ImportFromFileForm
+from os import listdir
+from os.path import isfile, join
 
 
 def export_to_file(request):
@@ -51,3 +54,108 @@ def do_export(entries, file_name, file_name_ending):
             line = f'{e.word.word}|[{e.get_transcription()}]|{e.translation.word}{e.translation.get_notes()}\n'
             f.write(line)
 
+
+def to_entry(line, from_lang, to_lang, categories, dicts):
+    partes = line.replace('\n', '').split('|')
+    word = views.get_or_create_word(partes[0], from_lang, categories)
+    if('(' in partes[2]):
+        trans = partes[2].split('(')
+        translation = trans[0][:-1]
+        notes = trans[1][:-1]
+    else:
+        translation = partes[2]
+        notes = None
+    translation = views.get_or_create_word(translation, to_lang, categories, notes)
+    existing = DictionaryEntry.objects.filter(word=word).filter(translation=translation).first()
+    if(existing != None):
+        return None, existing
+    entry = DictionaryEntry(word=word, translation=translation)
+    
+    entry.transcription = partes[1][1:-1]
+    entry.save()
+    entry.dictionary.set(dicts)
+    entry.save()
+    return entry, None
+
+
+def convert_line(entries_pks, not_aded_entries, fc, dicts, categories, line):
+    entry, not_added = to_entry(line, fc['from_lang'], fc['to'], categories, dicts)
+    if (entry != None):
+        entries_pks.append(entry.pk)
+    if (not_added != None):
+        not_aded_entries.append(not_added)
+
+
+def handle_import_from_dir_post(request):
+    entries_pks = []
+    not_aded_entries = []
+    form = ImportFromFileForm(request.POST)
+    if form.is_valid():
+        fc = form.cleaned_data 
+        mypath = 'io/imports/to_be_imported'
+        onlyfiles = [f for f in listdir(mypath) if isfile(join(mypath, f))]
+        for file in onlyfiles:
+            dicts = []
+            if(fc['use_filename_as_dict']):
+                try:
+                    d = Dictionary.objects.get(name=file)
+                except ObjectDoesNotExist:
+                    d = Dictionary(name=file, language_from=fc['from_lang'], language_to=fc['to'])
+                    d.save()
+                dicts.append(d)
+            if(fc['dictionary'] != None):
+                dicts.append(fc['dictionary'])
+            categories = []                
+            if(fc['category'] != None):
+                categories.append(fc['category'])
+            with open(join(mypath, file), "r") as f:
+                for line in f:
+                    print(line)
+                    if '%' in line:
+                        lines = line.split('%')
+                        for l in lines:
+                            convert_line(entries_pks, not_aded_entries, fc, dicts, categories, line)
+                    else:
+                        convert_line(entries_pks, not_aded_entries, fc, dicts, categories, line)
+            if(fc['only_first']):
+                break
+        initial = {'from_lang': fc['from_lang'],
+               'to':fc['to'],
+               'only_first':fc['only_first'],
+               'use_filename_as_dict':fc['use_filename_as_dict'],
+               }
+        if(len(entries_pks) > 0):
+            request.session['last_imported'] = entries_pks
+            entries = DictionaryEntry.objects.filter(pk__in=entries_pks)
+        else:
+            entries = []
+        context = views.handle_all_entries(request, entries)
+        if(len(not_aded_entries) > 0):
+            not_ad = ''
+            for e in not_aded_entries:
+                not_ad = not_ad + f'{e.word.word}|[{e.get_transcription()}]|{e.translation.word}{e.translation.get_notes()}\n'
+            context['result'] = 'not added:\n' + not_ad
+        else:            
+            context['result'] = 'Successfuly imported ' + str(not_aded_entries)
+        return initial, context
+
+
+def import_from_dir(request):
+    print('check results: ')
+    print('_import' in request.POST)
+    if (request.method == 'POST') and ('_import' in request.POST):
+        initial, context = handle_import_from_dir_post(request)
+    else:
+        from_lang = Language.objects.get(code='es')
+        to_lang = Language.objects.get(code='uk')
+        initial = {'from_lang': from_lang.code,
+                   'to':to_lang,
+                   'only_first':True,
+                   'use_filename_as_dict':True,
+                   }
+        entries_pks = request.session.get('last_imported', [])
+        entries = DictionaryEntry.objects.filter(pk__in=entries_pks)
+        context = views.handle_all_entries(request, entries)
+    form = ImportFromFileForm(initial)
+    context['form'] = form
+    return render(request, 'import_from_dir.html', context=context)

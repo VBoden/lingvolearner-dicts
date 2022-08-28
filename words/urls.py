@@ -15,4 +15,5 @@ urlpatterns = [
     path('filters/', views.filters, name='filters'),
     path('per_page_url/', views.change_per_page, name='per_page_url'),
     path('export_to_file/', io_dict.export_to_file, name='export_to_file'),
+    path('import_from_dir/', io_dict.import_from_dir, name='import_from_dir'),
 ]
