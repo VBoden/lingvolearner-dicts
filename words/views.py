@@ -304,7 +304,7 @@ def get_or_create_word(word_text, lang, categories, notes=None):
        word = Word(word=word_text)
     word.language = lang
     if(notes != None):
-        entry_word.notes = notes
+        word.notes = notes
     word.save()
     print('saved word:')
     print(word)
@@ -338,8 +338,11 @@ def change_word(entry_word, word_text, lang, categories, notes=None):
 def edit_entries(request):
     form = UpdateEntriesForm(request.POST)
     entries = []
-    for e in request.POST.getlist('entries'):
-        entries.append(DictionaryEntry.objects.get(pk=e))
+    if(len(request.POST.getlist('entries'))>0):
+        for e in request.POST.getlist('entries'):
+            entries.append(DictionaryEntry.objects.get(pk=e))
+    else:
+        entries = get_entries(request)
     if form.is_valid():
         fc = form.cleaned_data
         if('_add_dictionary' in request.POST and fc['dictionary'] != None):

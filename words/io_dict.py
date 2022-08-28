@@ -58,9 +58,9 @@ def do_export(entries, file_name, file_name_ending):
 def to_entry(line, from_lang, to_lang, categories, dicts):
     partes = line.replace('\n', '').split('|')
     word = views.get_or_create_word(partes[0], from_lang, categories)
-    if('(' in partes[2]):
-        trans = partes[2].split('(')
-        translation = trans[0][:-1]
+    if(' (' in partes[2]):
+        trans = partes[2].split(' (')
+        translation = trans[0]
         notes = trans[1][:-1]
     else:
         translation = partes[2]
