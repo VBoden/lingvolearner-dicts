@@ -4,7 +4,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from . import views
 from .models import Category, Dictionary, DictionaryEntry, Language
 from .forms import ExportToFileForm, ImportFromFileForm
-from os import listdir
+from os import listdir, rename
 from os.path import isfile, join
 
 
@@ -91,9 +91,10 @@ def handle_import_from_dir_post(request):
     not_aded_entries = []
     form = ImportFromFileForm(request.POST)
     if form.is_valid():
-        fc = form.cleaned_data 
-        mypath = 'io/imports/to_be_imported'
-        onlyfiles = [f for f in listdir(mypath) if isfile(join(mypath, f))]
+        fc = form.cleaned_data
+        from_path = 'io/imports/to_be_imported'
+        to_path = 'io/imports/imported'
+        onlyfiles = [f for f in listdir(from_path) if isfile(join(from_path, f))]
         for file in onlyfiles:
             dicts = []
             if(fc['use_filename_as_dict']):
@@ -108,7 +109,7 @@ def handle_import_from_dir_post(request):
             categories = []                
             if(fc['category'] != None):
                 categories.append(fc['category'])
-            with open(join(mypath, file), "r") as f:
+            with open(join(from_path, file), "r") as f:
                 for line in f:
                     print(line)
                     if '%' in line:
@@ -117,6 +118,7 @@ def handle_import_from_dir_post(request):
                             convert_line(entries_pks, not_aded_entries, fc, dicts, categories, line)
                     else:
                         convert_line(entries_pks, not_aded_entries, fc, dicts, categories, line)
+            rename(join(from_path, file),join(to_path, file))
             if(fc['only_first']):
                 break
         initial = {'from_lang': fc['from_lang'],
