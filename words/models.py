@@ -52,9 +52,9 @@ class Word(models.Model):
 
 
 class DictionaryEntry(models.Model):
-    word = models.ForeignKey('Word', on_delete=models.CASCADE, null=False)
+    word = models.ForeignKey('Word', on_delete=models.SET_NULL, null=True)
     transcription = models.CharField(max_length=30, blank=True, null=True)
-    translation = models.ForeignKey('Word', on_delete=models.CASCADE, related_name='translation')
+    translation = models.ForeignKey('Word', on_delete=models.SET_NULL, related_name='translation', null=True)
     dictionary = models.ManyToManyField(Dictionary, blank=True)
 
     class Meta:

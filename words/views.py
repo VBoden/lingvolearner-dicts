@@ -166,8 +166,8 @@ def handle_all_entries(request, entries=None):
     
     context = {
         'words':page_object.object_list,
-        'categories': Category.objects.all(),
-        'dictionaries': Dictionary.objects.all(),
+        'categories': Category.objects.all().order_by('name'),
+        'dictionaries': Dictionary.objects.all().order_by('-id'),
         'form':form,
         'filter_form':create_filter_form(request),
         'is_paginated': True,
@@ -297,7 +297,10 @@ def get_initial_update_form(entry=None):
 
 
 def get_or_create_word(word_text, lang, categories, notes=None):
-    existing = Word.objects.filter(word=word_text).first()
+    if(notes != None):
+        existing = Word.objects.filter(word=word_text).filter(notes=notes).first()
+    else:
+        existing = Word.objects.filter(word=word_text).first()
     if(existing != None):
         return existing
     else:

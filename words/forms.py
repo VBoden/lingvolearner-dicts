@@ -13,14 +13,14 @@ class UpdateEntryForm(forms.Form):
     translation_save_as_new = forms.BooleanField(required=False, label='Save translation as new')
     from_lang = forms.ModelChoiceField(queryset=Language.objects.all(), label='From')
     to = forms.ModelChoiceField(queryset=Language.objects.all())
-    categories = forms.ModelMultipleChoiceField(queryset=Category.objects.all(), required=False)
-    dictionaries = forms.ModelMultipleChoiceField(queryset=Dictionary.objects.all(), required=False)
+    categories = forms.ModelMultipleChoiceField(queryset=Category.objects.all().order_by('name'), required=False)
+    dictionaries = forms.ModelMultipleChoiceField(queryset=Dictionary.objects.all().order_by('-id'), required=False)
     entry_save_as_new = forms.BooleanField(required=False, label='Save as new')
 
 
 class UpdateEntriesForm(forms.Form):
-    category = forms.ModelChoiceField(queryset=Category.objects.all(), required=False)
-    dictionary = forms.ModelChoiceField(queryset=Dictionary.objects.all(), required=False)
+    category = forms.ModelChoiceField(queryset=Category.objects.all().order_by('name'), required=False)
+    dictionary = forms.ModelChoiceField(queryset=Dictionary.objects.all().order_by('-id'), required=False)
 
 
 class FiltersForm(forms.Form):
@@ -28,7 +28,7 @@ class FiltersForm(forms.Form):
     category_exclude = forms.BooleanField(required=False, label='exclude')
     dictionary = forms.ModelChoiceField(queryset=Dictionary.objects.all(), required=False)
     dictionary_exclude = forms.BooleanField(required=False, label='exclude')
-    sortby = forms.ChoiceField(choices = (('word','word'),('pk','id')),label='sort by')
+    sortby = forms.ChoiceField(choices = (('pk','id'),('word','word'),('translation','translation'),('word__category__name','category')),label='sort by')
     sortby_desc = forms.BooleanField(required=False, label='z-a')
 
 
